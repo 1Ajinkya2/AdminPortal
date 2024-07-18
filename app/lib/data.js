@@ -61,17 +61,19 @@ export const fetchCareers = async (q, page) => {
     throw new Error("Failed to fetch careers!");
   }
 };
+
 export const fetchService = async (id) => {
   console.log(id);
-  try {
+  try {    
     connectToDB();
-    const user = await Service.findById(id);
-    return user;
-  } catch (err) {
-    console.log(err);
-    throw new Error("Failed to fetch user!");
+    const service = await Service.findById(id);
+    return service;
+  } catch (error) {
+    console.error("Error fetching service:", error);
+    throw error;
   }
 };
+
 export const fetchServices = async (q, page) => {
   const regex = new RegExp(q, "i");
 

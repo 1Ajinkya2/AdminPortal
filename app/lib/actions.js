@@ -2,7 +2,7 @@
 
 import bcrypt from "bcrypt";
 import { revalidatePath } from "next/cache";
-import { User,Career } from "./models";
+import { User,Career,Service } from "./models";
 import { connectToDB } from "./utils";
 import { redirect } from "next/navigation";
 import { signIn } from "../auth";
@@ -211,12 +211,17 @@ export const updateService = async (formData) => {
 
 export const deleteService = async (formData) => {
   const { id } = Object.fromEntries(formData);
+  console.log("Deleting service with id:", id); 
 
   try {
     await connectToDB();
-    await Service.findByIdAndDelete(id);
+    const result = await Service.findByIdAndDelete(id);
+    if (!result) {
+      throw new Error("Service not found");
+    }
+    console.log("Service deleted:", result); 
   } catch (err) {
-    console.log(err);
+    console.log("Error deleting service:", err);
     throw new Error("Failed to delete service!");
   }
 

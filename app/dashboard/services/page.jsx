@@ -38,7 +38,7 @@ const Services = async ({ searchParams }) => {
               <td>{service.title}</td>
               <td>
                 <Image
-                  src={"https://utfs.io/f/952875e5-0470-4344-9798-cf248d13237b-g2g8ti.jpg" || "/noimage.png"}
+                  src={service.image || "/noimage.png"}
                   alt=""
                   width={40}
                   height={40}
