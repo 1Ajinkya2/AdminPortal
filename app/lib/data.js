@@ -1,4 +1,4 @@
-import { Product,Service,Career, User } from "./models";
+import { Product,Service,Career, User,BgImages } from "./models";
 import { connectToDB } from "./utils";
 
 export const fetchUsers = async (q, page) => {
@@ -93,7 +93,22 @@ export const fetchServices = async (q, page) => {
   }
 };
 
+export const fetchImages = async (q, page) => {
+  const regex = new RegExp(q, "i");
+  const ITEM_PER_PAGE = 2;
 
+  try {
+    await connectToDB(); 
+    const count = await BgImages.countDocuments({ title: { $regex: regex } });
+    const images = await BgImages.find({ title: { $regex: regex } })
+      .limit(ITEM_PER_PAGE)
+      .skip(ITEM_PER_PAGE * (page - 1));
+    return { count, images };
+  } catch (err) {
+    console.error("Error fetching images:", err);
+    throw new Error("Failed to fetch images!");
+  }
+};
 // DUMMY DATA
 export const cards = [
   {

@@ -2,7 +2,7 @@
 
 import bcrypt from "bcrypt";
 import { revalidatePath } from "next/cache";
-import { User,Career,Service } from "./models";
+import { User,Career,Service,BgImages } from "./models";
 import { connectToDB } from "./utils";
 import { redirect } from "next/navigation";
 import { signIn } from "../auth";
@@ -184,7 +184,7 @@ export const addService = async (formData) => {
 };
 
 export const updateService = async (formData) => {
-  const { id, title, image, description } = Object.fromEntries(formData);
+  const { id, title, image, description } = {formData};
 
   try {
     connectToDB();
@@ -228,6 +228,19 @@ export const deleteService = async (formData) => {
   revalidatePath("/dashboard/services");
 };
 
+export const deleteImage= async (formData) => {
+  const { id } = Object.fromEntries(formData);
+
+  try {
+    await connectToDB();
+    await BgImages.findByIdAndDelete(id);
+  } catch (err) {
+    console.log(err);
+    throw new Error("Failed to delete career!");
+  }
+
+  revalidatePath("/dashboard/career");
+};
 export const authenticate = async (prevState, formData) => {
   const { username, password } = Object.fromEntries(formData);
 

@@ -87,6 +87,11 @@ const serviceSchema = new mongoose.Schema({
   image: { type: String, required: true },
   description: { type: String, required: true },
 });
+const bgImagesSchema = new mongoose.Schema({
+  title: { type: String, required: true },
+  image: { type: String, required: true },
+});
+export const BgImages = mongoose.models.BgImages || mongoose.model("BgImages", bgImagesSchema);
 export const Service = mongoose.models.Service || mongoose.model("Service", serviceSchema);
 export const Career = mongoose.models.Career || mongoose.model("Career", careerSchema);
 export const User = mongoose.models.User || mongoose.model("User", userSchema);

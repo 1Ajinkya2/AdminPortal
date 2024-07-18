@@ -49,6 +49,11 @@ const menuItems = [
         path: "/dashboard/career",
         icon: <MdDashboard />,
       },
+      {
+        title: "BgImages",
+        path: "/dashboard/backgroundimages",
+        icon: <MdDashboard />,
+      },
     ],
   },
 //   {
