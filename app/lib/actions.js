@@ -170,35 +170,27 @@ export const addService = async (formData) => {
     });
 
     await newService.save();
-    
-    return {
-      redirect: {
-        destination: "/dashboard/services",
-      },
-    }
+
   } catch (err) {
     console.error("Error creating service entry:", err.message);
     throw new Error("Failed to create service entry!");
   }
+  revalidatePath("/dashboard/services");
+  redirect("/dashboard/services");
 };
 
+
 export const updateService = async (formData) => {
-  const { id, title, image, description } = {formData};
+  const { id, title, image, description } = formData;
 
   try {
     connectToDB();
 
-    const updateFields = {
+    await Service.findByIdAndUpdate(id, {
       title,
       image,
       description,
-    };
-
-    Object.keys(updateFields).forEach(
-      (key) => (updateFields[key] === "" || updateFields[key] === undefined) && delete updateFields[key]
-    );
-
-    await Service.findByIdAndUpdate(id, updateFields);
+    });  
   } catch (err) {
     console.log(err);
     throw new Error("Failed to update service!");
@@ -227,6 +219,7 @@ export const deleteService = async (formData) => {
   revalidatePath("/dashboard/services");
 };
 
+//Background Image Hanldles
 export const addBgImage = async (formData) => {
   const title = formData.get('title');
   const image = formData.get('image');
@@ -252,7 +245,25 @@ export const addBgImage = async (formData) => {
   revalidatePath("/dashboard/backgroundimages");
   redirect("/dashboard/backgroundimages");
 };
+export const updateImage = async (formData) => {
+  const { id, title, image } = formData;
 
+  try {
+    connectToDB();
+
+    await BgImages.findByIdAndUpdate(id, {
+      title,
+      image,
+    });
+
+    revalidatePath(`/dashboard/backgroundimages/${id}`);
+  } catch (err) {
+    console.log(err);
+    throw new Error("Failed to update background image!");
+  }
+  revalidatePath("/dashboard/backgroundimages");
+  redirect("/dashboard/backgroundimages");
+};
 export const deleteImage= async (formData) => {
   const { id } = Object.fromEntries(formData);
 
