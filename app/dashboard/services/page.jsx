@@ -40,8 +40,8 @@ const Services = async ({ searchParams }) => {
                 <Image
                   src={service.image || "/noimage.png"}
                   alt=""
-                  width={40}
-                  height={40}
+                  width={200}
+                  height={150}
                   className={styles.serviceImage}
                 />
               </td>

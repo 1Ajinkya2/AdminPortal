@@ -92,7 +92,16 @@ export const fetchServices = async (q, page) => {
     throw new Error("Failed to fetch services!");
   }
 };
-
+export const fetchImage = async (id) => {
+  try {
+    connectToDB();
+    const bgImage = await BgImages.findById(id);
+    return bgImage;
+  } catch (err) {
+    console.log(err);
+    throw new Error("Failed to fetch background image!");
+  }
+};
 export const fetchImages = async (q, page) => {
   const regex = new RegExp(q, "i");
   const ITEM_PER_PAGE = 2;

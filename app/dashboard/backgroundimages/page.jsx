@@ -5,6 +5,7 @@ import Search from "@/app/ui/dashboard/search/search";
 import styles from "@/app/ui/dashboard/users/users.module.css"; 
 import Image from "next/image";
 import Link from "next/link";
+import { BgImages } from "@/app/lib/models";
 
 const BackgroundImages = async ({ searchParams }) => {
   const q = searchParams?.q || "";
@@ -39,19 +40,25 @@ const BackgroundImages = async ({ searchParams }) => {
                 <Image
                   src={image.image || "/noimage.png"}
                   alt=""
-                  width={40}
-                  height={40}
+                  width={200}
+                  height={150}
                   className={styles.imageImage}
                 />
               </td>
               <td>
                 <div className={styles.buttons}>
+                <Link href={`/dashboard/backgroundimages/${image._id}`}>
+                    <button className={`${styles.button} ${styles.view}`}>
+                      View
+                    </button>
+                  </Link>
                   <form action={deleteImage}>
                     <input type="hidden" name="id" value={image._id} />
                     <button className={`${styles.button} ${styles.delete}`}>
                       Delete
                     </button>
                   </form>
+            
                 </div>
               </td>
             </tr>

@@ -1,5 +1,4 @@
 "use server";
-
 import bcrypt from "bcrypt";
 import { revalidatePath } from "next/cache";
 import { User,Career,Service,BgImages } from "./models";
@@ -226,6 +225,32 @@ export const deleteService = async (formData) => {
   }
 
   revalidatePath("/dashboard/services");
+};
+
+export const addBgImage = async (formData) => {
+  const title = formData.get('title');
+  const image = formData.get('image');
+
+  if (!title || !image) {
+    throw new Error("Title and image are required");
+  }
+
+  try {
+    connectToDB();
+
+    const newBgImage = new BgImages({
+      title,
+      image,
+    });
+
+    await newBgImage.save();
+  } catch (err) {
+    console.log(err);
+    throw new Error("Failed to create background image!");
+  }
+
+  revalidatePath("/dashboard/backgroundimages");
+  redirect("/dashboard/backgroundimages");
 };
 
 export const deleteImage= async (formData) => {
