@@ -40,21 +40,21 @@ const Career = async ({ searchParams }) => {
         </thead>
         <tbody>
           {careers.map((career) => (
-            <tr key={career.id}>
-              <td>{career.positionTitle}</td>
+            <tr key={career.career_id}>
+              <td>{career.positiontitle}</td>
               <td>{career.location}</td>
               <td>{career.responsibilities}</td>
               <td>{career.qualifications}</td>
               <td>{career.contact}</td>
               <td>
                 <div className={styles.buttons}>
-                  <Link href={`/dashboard/career/${career.id}`}>
+                  <Link href={`/dashboard/career/${career.career_id}`}>
                     <button className={`${styles.button} ${styles.view}`}>
                       View
                     </button>
                   </Link>
                   <form action={deleteCareer} method="POST">
-                    <input type="hidden" name="id" value={career.id} />
+                    <input type="hidden" name="id" value={career.career_id} />
                     <button className={`${styles.button} ${styles.delete}`}>
                       Delete
                     </button>

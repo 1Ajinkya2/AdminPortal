@@ -1,34 +1,28 @@
 "use server";
 import bcrypt from "bcrypt";
 import { revalidatePath } from "next/cache";
-import { User,Career,Service,BgImages } from "./models";
 import { connectToDB } from "./utils";
 import { redirect } from "next/navigation";
-import { signIn } from "../auth";
+import { connectDB, pool } from "./utils";
 
 export const addUser = async (formData) => {
-  const { username, email, password, phone, address, isAdmin, isActive } =
-    Object.fromEntries(formData);
-
+  const { username, email, password, phone, address, isAdmin, isActive } = Object.fromEntries(formData);
+  
   try {
-    connectToDB();
-
+    await connectToDB();
+    
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    const newUser = new User({
-      username,
-      email,
-      password: hashedPassword,
-      phone,
-      address,
-      isAdmin,
-      isActive,
-    });
-
-    await newUser.save();
+    const query = `
+      INSERT INTO Users (username, email, password, phone, address, isAdmin, isActive)
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
+    `;
+    const values = [username, email, hashedPassword, phone, address, isAdmin, isActive];
+    
+    await pool.query(query, values);
   } catch (err) {
-    console.log(err);
+    console.error(err);
     throw new Error("Failed to create user!");
   }
 
@@ -46,61 +40,66 @@ export const addCareer = async (formData) => {
   try {
     await connectToDB();
 
-    const newCareer = new Career({
-      positionTitle,
-      location,
-      responsibilities,
-      qualifications,
-      contact,
-    });
+    const query = `
+      INSERT INTO Career (positiontitle, location, responsibilities, qualifications, contact)
+      VALUES ($1, $2, $3, $4, $5)
+    `;
+    const values = [positionTitle, location, responsibilities, qualifications, contact];
 
-    await newCareer.save();
-    
-    return {
-      redirect: {
-        destination: "/dashboard/career",
-      },
-    }
+    await pool.query(query, values);
   } catch (err) {
     console.error("Error creating career entry:", err.message);
     throw new Error("Failed to create career entry!");
-  }
-};
-export const updateCareer = async (formData) => {
-  const { id, positionTitle, location, responsibilities, qualifications, contact } = Object.fromEntries(formData);
-  try {
-    connectToDB();
-
-    const updateFields = {
-      positionTitle,
-      location,
-      responsibilities,
-      qualifications,
-      contact,
-    };
-
-    Object.keys(updateFields).forEach(
-      (key) =>
-        (updateFields[key] === "" || undefined) && delete updateFields[key]
-    );
-    // console.log("updated succesfully");
-    await Career.findByIdAndUpdate(id, updateFields);
-  } catch (err) {
-    console.log(err);
-    throw new Error("Failed to update career!");
   }
   revalidatePath("/dashboard/career");
   redirect("/dashboard/career");
 };
 
-export const deleteCareer = async (formData) => {
-  const { id } = Object.fromEntries(formData);
+export const updateCareer = async (formData) => {
+  const { id, positionTitle, location, responsibilities, qualifications, contact } = formData;
 
   try {
     await connectToDB();
-    await Career.findByIdAndDelete(id);
+
+    // Define the SQL query
+    const query = `
+      UPDATE Career
+      SET positiontitle = $1, location = $2, responsibilities = $3, qualifications = $4, contact = $5
+      WHERE career_id = $6
+    `;
+
+    // Values to be bound to the query
+    const values = [positionTitle, location, responsibilities, qualifications, contact, id];
+
+    // Execute the query
+    await pool.query(query, values);
   } catch (err) {
-    console.log(err);
+    console.error('Error updating career:', err);
+    throw new Error("Failed to update career!");
+  }
+
+  revalidatePath("/dashboard/career");
+  redirect("/dashboard/career");
+};
+
+
+
+export const deleteCareer = async (formData) => {
+  const { id } = Object.fromEntries(formData);
+  
+  try {
+    await connectToDB();
+    const query = `
+      DELETE FROM Career
+      WHERE career_id = $1
+    `;
+
+    const result = await pool.query(query, [id]);
+    if (result.rowCount === 0) {
+      throw new Error("Career not found");
+    }
+  } catch (err) {
+    console.error(err);
     throw new Error("Failed to delete career!");
   }
 
@@ -108,30 +107,22 @@ export const deleteCareer = async (formData) => {
 };
 
 export const updateUser = async (formData) => {
-  const { id, username, email, password, phone, address, isAdmin, isActive } =
-    Object.fromEntries(formData);
+  const { id, username, email, password, phone, address, isAdmin, isActive } = formData;
 
   try {
-    connectToDB();
+    await connectToDB();
 
-    const updateFields = {
-      username,
-      email,
-      password,
-      phone,
-      address,
-      isAdmin,
-      isActive,
-    };
+    const query = `
+      UPDATE Users
+      SET username=$2, email=$3, password=$4, phone=$5, address=$6, isadmin=$7,isactive=$8
+      WHERE user_id = $1
+    `;
 
-    Object.keys(updateFields).forEach(
-      (key) =>
-        (updateFields[key] === "" || undefined) && delete updateFields[key]
-    );
+    const values = [id, username, email, password, phone, address, isAdmin, isActive];
 
-    await User.findByIdAndUpdate(id, updateFields);
+    await pool.query(query, values);
   } catch (err) {
-    console.log(err);
+    console.error(err);
     throw new Error("Failed to update user!");
   }
 
@@ -143,10 +134,18 @@ export const deleteUser = async (formData) => {
   const { id } = Object.fromEntries(formData);
 
   try {
-    connectToDB();
-    await User.findByIdAndDelete(id);
+    await connectToDB();
+    const query = `
+      DELETE FROM Users
+      WHERE user_id = $1
+    `;
+
+    const result = await pool.query(query, [id]);
+    if (result.rowCount === 0) {
+      throw new Error("User not found");
+    }
   } catch (err) {
-    console.log(err);
+    console.error(err);
     throw new Error("Failed to delete user!");
   }
 
@@ -163,36 +162,38 @@ export const addService = async (formData) => {
   try {
     await connectToDB();
 
-    const newService = new Service({
-      title,
-      image,
-      description,
-    });
+    const query = `
+      INSERT INTO Service (title, image, description)
+      VALUES ($1, $2, $3)
+    `;
+    const values = [title, image, description];
 
-    await newService.save();
-
+    await pool.query(query, values);
   } catch (err) {
     console.error("Error creating service entry:", err.message);
     throw new Error("Failed to create service entry!");
   }
+
   revalidatePath("/dashboard/services");
   redirect("/dashboard/services");
 };
-
 
 export const updateService = async (formData) => {
   const { id, title, image, description } = formData;
 
   try {
-    connectToDB();
+    await connectToDB();
 
-    await Service.findByIdAndUpdate(id, {
-      title,
-      image,
-      description,
-    });  
+    const query = `
+      UPDATE Service
+      SET title = $1, image = $2, description = $3
+      WHERE service_id = $4
+    `;
+    const values = [title, image, description, id];
+
+    await pool.query(query, values);
   } catch (err) {
-    console.log(err);
+    console.error(err);
     throw new Error("Failed to update service!");
   }
 
@@ -202,24 +203,27 @@ export const updateService = async (formData) => {
 
 export const deleteService = async (formData) => {
   const { id } = Object.fromEntries(formData);
-  console.log("Deleting service with id:", id); 
-
+  
   try {
     await connectToDB();
-    const result = await Service.findByIdAndDelete(id);
-    if (!result) {
+    const query = `
+      DELETE FROM Service
+      WHERE service_id = $1
+    `;
+
+    const result = await pool.query(query, [id]);
+    if (result.rowCount === 0) {
       throw new Error("Service not found");
     }
-    console.log("Service deleted:", result); 
   } catch (err) {
-    console.log("Error deleting service:", err);
+    console.error("Error deleting service:", err);
     throw new Error("Failed to delete service!");
   }
 
   revalidatePath("/dashboard/services");
 };
 
-//Background Image Hanldles
+// Background Image Handles
 export const addBgImage = async (formData) => {
   const title = formData.get('title');
   const image = formData.get('image');
@@ -229,63 +233,67 @@ export const addBgImage = async (formData) => {
   }
 
   try {
-    connectToDB();
+    await connectToDB();
 
-    const newBgImage = new BgImages({
-      title,
-      image,
-    });
+    const query = `
+      INSERT INTO BgImages (title, image)
+      VALUES ($1, $2)
+    `;
+    const values = [title, image];
 
-    await newBgImage.save();
+    await pool.query(query, values);
   } catch (err) {
-    console.log(err);
+    console.error(err);
     throw new Error("Failed to create background image!");
   }
 
   revalidatePath("/dashboard/backgroundimages");
   redirect("/dashboard/backgroundimages");
 };
+
 export const updateImage = async (formData) => {
   const { id, title, image } = formData;
 
   try {
-    connectToDB();
+    await connectToDB();
 
-    await BgImages.findByIdAndUpdate(id, {
-      title,
-      image,
-    });
+    const query = `
+      UPDATE BgImages
+      SET title = $1, image = $2
+      WHERE bgimages_id = $3
+    `;
+    const values = [title, image, id];
+
+    await pool.query(query, values);
 
     revalidatePath(`/dashboard/backgroundimages/${id}`);
   } catch (err) {
-    console.log(err);
+    console.error(err);
     throw new Error("Failed to update background image!");
   }
+
   revalidatePath("/dashboard/backgroundimages");
   redirect("/dashboard/backgroundimages");
 };
-export const deleteImage= async (formData) => {
+
+export const deleteImage = async (formData) => {
   const { id } = Object.fromEntries(formData);
 
   try {
     await connectToDB();
-    await BgImages.findByIdAndDelete(id);
-  } catch (err) {
-    console.log(err);
-    throw new Error("Failed to delete career!");
-  }
+    const query = `
+      DELETE FROM BgImages
+      WHERE bgimages_id = $1
+    `;
 
-  revalidatePath("/dashboard/career");
-};
-export const authenticate = async (prevState, formData) => {
-  const { username, password } = Object.fromEntries(formData);
-
-  try {
-    await signIn("credentials", { username, password });
-  } catch (err) {
-    if (err.message.includes("CredentialsSignin")) {
-      return "Wrong Credentials";
+    const result = await pool.query(query, [id]);
+    if (result.rowCount === 0) {
+      throw new Error("Background image not found");
     }
-    throw err;
+  } catch (err) {
+    console.error("Error deleting background image:", err);
+    throw new Error("Failed to delete background image!");
   }
+
+  revalidatePath("/dashboard/backgroundimages");
 };

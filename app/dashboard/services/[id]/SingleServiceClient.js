@@ -14,7 +14,7 @@ const SingleServiceClient = ({ service }) => {
   const handleSubmit = async (event) => {
     event.preventDefault();
     const updatedService = {
-      id: service._id,
+      id: service.service_id,
       title,
       image: imageUrl,
       description,
@@ -39,7 +39,7 @@ const SingleServiceClient = ({ service }) => {
       </div>
       <div className={styles.formContainer}>
         <form onSubmit={handleSubmit} className={styles.form}>
-          <input type="hidden" name="id" value={service._id} />
+          <input type="hidden" name="id" value={service.service_id} />
           <label>Title</label>
           <input
             type="text"

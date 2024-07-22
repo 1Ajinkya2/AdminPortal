@@ -2,16 +2,16 @@ import { deleteService } from "@/app/lib/actions";
 import { fetchServices } from "@/app/lib/data";
 import Pagination from "@/app/ui/dashboard/pagination/pagination";
 import Search from "@/app/ui/dashboard/search/search";
-import styles from "@/app/ui/dashboard/users/users.module.css"; // Consider renaming this for services
+import styles from "@/app/ui/dashboard/users/users.module.css"; 
 import Image from "next/image";
 import Link from "next/link";
 
 const Services = async ({ searchParams }) => {
   const q = searchParams?.q || "";
-  const page = searchParams?.page || 1;
+  const page = parseInt(searchParams?.page, 10) || 1; // Ensure page is an integer
   const { count, services } = await fetchServices(q, page);
 
-  if (!services) {
+  if (!services || services.length === 0) {
     return <div>No services found</div>;
   }
 
@@ -34,12 +34,12 @@ const Services = async ({ searchParams }) => {
         </thead>
         <tbody>
           {services.map((service) => (
-            <tr key={service._id}>
+            <tr key={service.service_id}>
               <td>{service.title}</td>
               <td>
                 <Image
                   src={service.image || "/noimage.png"}
-                  alt=""
+                  alt={service.title || "No Image"}
                   width={200}
                   height={150}
                   className={styles.serviceImage}
@@ -48,14 +48,14 @@ const Services = async ({ searchParams }) => {
               <td>{service.description.slice(0, 50)}...</td>
               <td>
                 <div className={styles.buttons}>
-                  <Link href={`/dashboard/services/${service._id}`}>
+                  <Link href={`/dashboard/services/${service.service_id}`}>
                     <button className={`${styles.button} ${styles.view}`}>
                       View
                     </button>
                   </Link>
-                  <form action={deleteService}>
-                    <input type="hidden" name="id" value={service._id} />
-                    <button className={`${styles.button} ${styles.delete}`}>
+                  <form action={deleteService} method="POST">
+                    <input type="hidden" name="id" value={service.service_id} />
+                    <button type="submit" className={`${styles.button} ${styles.delete}`}>
                       Delete
                     </button>
                   </form>

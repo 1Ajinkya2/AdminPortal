@@ -13,7 +13,7 @@ const SingleBgImageClient = ({ bgImage }) => {
   const handleSubmit = async (event) => {
     event.preventDefault();
     const updatedBgImage = {
-      id: bgImage._id,
+      id: bgImage.bgimages_id,
       title,
       image: imageUrl,
     };
@@ -37,7 +37,7 @@ const SingleBgImageClient = ({ bgImage }) => {
       </div>
       <div className={styles.formContainer}>
         <form onSubmit={handleSubmit} className={styles.form}>
-          <input type="hidden" name="id" value={bgImage._id} />
+          <input type="hidden" name="id" value={bgImage.bgimages_id} />
           <label>Title</label>
           <input
             type="text"

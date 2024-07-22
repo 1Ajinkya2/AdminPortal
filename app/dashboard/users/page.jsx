@@ -24,7 +24,7 @@ const Users = async ({ searchParams }) => {
           <tr>
             <td>Name</td>
             <td>Email</td>
-            <td>Created At</td>
+            {/* <td>Created At</td> */}
             <td>Role</td>
             <td>Status</td>
             <td>Action</td>
@@ -32,7 +32,7 @@ const Users = async ({ searchParams }) => {
         </thead>
         <tbody>
           {users.map((user) => (
-            <tr key={user.id}>
+            <tr key={user.user_id}>
               <td>
                 <div className={styles.user}>
                   <Image
@@ -46,18 +46,18 @@ const Users = async ({ searchParams }) => {
                 </div>
               </td>
               <td>{user.email}</td>
-              <td>{user.createdAt?.toString().slice(4, 16)}</td>
-              <td>{user.isAdmin ? "Admin" : "Client"}</td>
-              <td>{user.isActive ? "active" : "passive"}</td>
+              {/* <td>{user.createdAt?.toString().slice(4, 16)}</td> */}
+              <td>{user.isadmin ? "Admin" : "Client"}</td>
+              <td>{user.isactive ? "active" : "passive"}</td>
               <td>
                 <div className={styles.buttons}>
-                  <Link href={`/dashboard/users/${user.id}`}>
+                  <Link href={`/dashboard/users/${user.user_id}`}>
                     <button className={`${styles.button} ${styles.view}`}>
                       View
                     </button>
                   </Link>
                   <form action={deleteUser}>
-                    <input type="hidden" name="id" value={user.id} />
+                    <input type="hidden" name="id" value={user.user_id} />
                     <button className={`${styles.button} ${styles.delete}`}>
                       Delete
                     </button>
